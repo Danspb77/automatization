@@ -1,6 +1,7 @@
 import telebot
 from telebot import types
-
+import json
+from datetime import datetime
 
 # token from telegram
 bot=telebot.TeleBot("6235774110:AAFhV7WQ96YjqkvbRTl5-usGzPoue9lF4rU")
@@ -10,7 +11,24 @@ data_dict = {
         "dan":2746,
         "mom":845
     }
+with open("data.json", "r") as read_file:
+    data_dict = json.load(read_file)
 
+data_dict_values=data_dict.values()
+
+today=datetime.today()
+today=today.strftime("%d/%m/%Y")
+
+def age_calculation(value):
+    date_string = str(value)
+    date_object = datetime.strptime(date_string, "%d/%m/%Y")
+    date_object=date_object.year
+    now = datetime.now()
+    now=now.year
+
+    delta = now - date_object
+
+    return( delta)
 
 @bot.message_handler(commands=['start'])
 
@@ -23,8 +41,21 @@ def start(message):
 
     text='What would you like to do?'
     bot.send_message(message.chat.id,text,reply_markup=generate_markup())
+
     
-# generaye buttons
+    
+
+    
+        
+    for key, value in data_dict.items():
+        if today[:5] in value:
+
+            print(f"{key}: {value}")
+            age=age_calculation(value)
+            text= f"сегодня день рождения у {key}: {value}, ему {age} лет"
+            bot.send_message(message.chat.id,text ,parse_mode='html')
+    
+# generate buttons
 def generate_markup():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     adding_pers = types.KeyboardButton("add person in birthday list")
@@ -40,7 +71,7 @@ def generate_markup():
 def func(message):
 
     if(message.text == "add person in birthday list"):
-        bot.send_message(message.chat.id, "Введите имя черз пробел дату:")
+        bot.send_message(message.chat.id, "Введите имя черз пробел дату день/месяц/год:")
         bot.register_next_step_handler(message, get_name_and_day)
     if message.text == "/print":
         print_data(message)    
@@ -56,12 +87,15 @@ def get_name_and_day(message):
     name=name_and_day[0]
     day=name_and_day[1]
     data_dict[name]=day
+    with open('data.json', 'w') as outfile:
+        json.dump(data_dict, outfile)
+    bot.send_message(message.chat.id, "Данные успешно записаны")
 
 # print data_dict
 def print_data(message):
     
     chat_id = message.chat.id
-    data_text = "Содержимое словаря:\n"
+    data_text = "Содержимое списка:\n"
     for key, value in data_dict.items():
         data_text += f"{key}: {value}\n"
     bot.send_message(chat_id, data_text)
