@@ -56,7 +56,8 @@ def generate_markup():
     adding_pers = types.KeyboardButton("add person in birthday list")
     show_persons = types.KeyboardButton("show persons")
     birth_today=types.KeyboardButton("imenninik")
-    markup.add(adding_pers, show_persons,birth_today)
+    birth_during_week=types.KeyboardButton("blizko")
+    markup.add(adding_pers, show_persons,birth_today,birth_during_week)
     return markup
 
 
@@ -75,6 +76,8 @@ def func(message):
         print_data(message)
     if message.text=="imenninik":
         birthday_check(message)
+    if message.text=="blizko":
+        week_check(message)
         
 
 # funct to add new line in dictionary
@@ -113,6 +116,24 @@ def birthday_check(message):
                 else:
                     text= f"сегодня день рождения у {key}: {value}, ему {age} "
                     bot.send_message(message.chat.id,text ,parse_mode='html')
+
+
+def plus_week(value):
+    value=value[:5]
+    date_object=datetime.strptime(value + "/" + str(datetime.now().year), "%d/%m/%Y")
+    now=datetime.now()
+    differnce=date_object-now
+    differnce=differnce.days
+    if 0<=differnce<=7:
+        return True
+    else:
+        return False
+def week_check(message):
+    for key, value in data_dict.items():
+        if plus_week(value)==True:
+            age=age_calculation(value)
+            text= f"меньше чем через неделю будет день рождения у {key}: {value}, ему {age} "
+            bot.send_message(message.chat.id,text ,parse_mode='html')
 
     
 bot.polling(non_stop=True)
