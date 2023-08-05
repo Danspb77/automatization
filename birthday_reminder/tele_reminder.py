@@ -14,7 +14,6 @@ data_dict = {
 with open("data.json", "r") as read_file:
     data_dict = json.load(read_file)
 
-data_dict_values=data_dict.values()
 
 today=datetime.today()
 today=today.strftime("%d/%m/%Y")
@@ -31,23 +30,41 @@ def age_calculation(value):
 
     return( delta)
 
-@bot.message_handler(commands=['start'])
 
+
+
+@bot.message_handler(commands=['welcome'])
+
+def send_welcome(message):
+    markup = types.InlineKeyboardMarkup()
+    start_button = types.InlineKeyboardButton(text="Start", callback_data="start")
+    markup.add(start_button)
+    
+    user_name = message.from_user.first_name
+    text=f'hello, {user_name}, I\'m bot which will remind\
+     you about birhdays'
+    bot.send_message(message.chat.id,text ,parse_mode='html')
+
+    bot.send_message(message.chat.id, "Нажмите на кнопку, чтобы начать:", reply_markup=markup)
 
             
 # congreeting messages
-def start(message):
+@bot.message_handler(commands=['start'])
 
+def start(message):
+    # generate_start_buttom(message)
     
-    text=f'hello, {message.from_user.first_name}, I\'m bot which will remind\
-     you about birhdays'
-    bot.send_message(message.chat.id,text ,parse_mode='html')
+    
 
     text='What would you like to do?'
     bot.send_message(message.chat.id,text,reply_markup=generate_markup())
     birthday_check(message)
 
-        
+
+@bot.callback_query_handler(func=lambda call: call.data == "start")
+def process_callback_start(call):
+   
+    start(call.message)        
     
     
 # generate buttons
@@ -70,8 +87,7 @@ def func(message):
     if(message.text == "add person in birthday list"):
         bot.send_message(message.chat.id, "Введите имя черз пробел дату день/месяц/год:")
         bot.register_next_step_handler(message, get_name_and_day)
-    if message.text == "/print":
-        print_data(message)    
+        
     if message.text=="show persons":
         print_data(message)
     if message.text=="imenninik":
@@ -102,6 +118,13 @@ def print_data(message):
         data_text += f"{key}: {value}\n"
     bot.send_message(chat_id, data_text)
 
+def delete_person(message, person):
+    for key in data_dict.items():
+        if person==key:
+            
+
+
+# check if anyone has birthday today
 def birthday_check(message):
         for key, value in data_dict.items():
             if today[:5] in value:
@@ -119,6 +142,7 @@ def birthday_check(message):
 
 
 def plus_week(value):
+
     value=value[:5]
     date_object=datetime.strptime(value + "/" + str(datetime.now().year), "%d/%m/%Y")
     now=datetime.now()
@@ -128,6 +152,8 @@ def plus_week(value):
         return True
     else:
         return False
+
+# check if anyone has birthday during the week
 def week_check(message):
     for key, value in data_dict.items():
         if plus_week(value)==True:
