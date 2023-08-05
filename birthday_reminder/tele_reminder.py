@@ -74,7 +74,8 @@ def generate_markup():
     show_persons = types.KeyboardButton("show persons")
     birth_today=types.KeyboardButton("imenninik")
     birth_during_week=types.KeyboardButton("blizko")
-    markup.add(adding_pers, show_persons,birth_today,birth_during_week)
+    delete_person=types.KeyboardButton("delete_person")
+    markup.add(adding_pers, show_persons,birth_today,birth_during_week,delete_person)
     return markup
 
 
@@ -94,6 +95,10 @@ def func(message):
         birthday_check(message)
     if message.text=="blizko":
         week_check(message)
+    if message.text=="delete_person":
+        bot.send_message(message.chat.id, "Введите имя of deleting person:")
+        bot.register_next_step_handler(message, delete_person)
+        
         
 
 # funct to add new line in dictionary
@@ -111,17 +116,29 @@ def get_name_and_day(message):
 
 # print data_dict
 def print_data(message):
-    
+    with open("data.json", "r") as read_file:
+        data_dict = json.load(read_file)
+
     chat_id = message.chat.id
     data_text = "Содержимое списка:\n"
     for key, value in data_dict.items():
         data_text += f"{key}: {value}\n"
     bot.send_message(chat_id, data_text)
 
-def delete_person(message, person):
-    for key in data_dict.items():
-        if person==key:
-            
+def delete_person(message):
+    person=message.text
+    with open('data.json', 'r') as f:
+        data = json.load(f)
+    # Удаляем ключ
+    if person in data:
+        del data[person]
+
+    # Записываем обновленный JSON обратно в файл
+    with open('data.json', 'w') as f:
+        json.dump(data, f)    
+        
+    
+        bot.send_message(message.chat.id, "Данные успешно удалены")
 
 
 # check if anyone has birthday today
