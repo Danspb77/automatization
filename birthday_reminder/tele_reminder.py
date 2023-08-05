@@ -58,7 +58,7 @@ def start(message):
 
     text='What would you like to do?'
     bot.send_message(message.chat.id,text,reply_markup=generate_markup())
-    birthday_check(message)
+    
 
 
 @bot.callback_query_handler(func=lambda call: call.data == "start")
@@ -113,6 +113,7 @@ def get_name_and_day(message):
     with open('data.json', 'w') as outfile:
         json.dump(data_dict, outfile)
     bot.send_message(message.chat.id, "Данные успешно записаны")
+    start(message)
 
 # print data_dict
 def print_data(message):
@@ -124,7 +125,9 @@ def print_data(message):
     for key, value in data_dict.items():
         data_text += f"{key}: {value}\n"
     bot.send_message(chat_id, data_text)
+    start(message)
 
+# deletepersons
 def delete_person(message):
     person=message.text
     with open('data.json', 'r') as f:
@@ -139,6 +142,7 @@ def delete_person(message):
         
     
         bot.send_message(message.chat.id, "Данные успешно удалены")
+        start(message)
 
 
 # check if anyone has birthday today
@@ -172,11 +176,20 @@ def plus_week(value):
 
 # check if anyone has birthday during the week
 def week_check(message):
+    flag=False
     for key, value in data_dict.items():
         if plus_week(value)==True:
+            flag=True
             age=age_calculation(value)
             text= f"меньше чем через неделю будет день рождения у {key}: {value}, ему {age} "
             bot.send_message(message.chat.id,text ,parse_mode='html')
+            
+    if flag==True:
+        start(message)
 
-    
+    if flag==False:
+        text= f"nobody hasn't birthday during the week "
+        bot.send_message(message.chat.id,text ,parse_mode='html')
+        start(message)
+
 bot.polling(non_stop=True)
