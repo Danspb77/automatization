@@ -103,7 +103,7 @@ def func(message):
 
 # funct to add new line in dictionary
 def get_name_and_day(message):
-    chat_id = message.chat.id
+    
     name_and_day = message.text
     name_and_day=str(name_and_day)
     name_and_day=name_and_day.split()
@@ -119,13 +119,18 @@ def get_name_and_day(message):
 def print_data(message):
     with open("data.json", "r") as read_file:
         data_dict = json.load(read_file)
-
-    chat_id = message.chat.id
-    data_text = "Содержимое списка:\n"
-    for key, value in data_dict.items():
-        data_text += f"{key}: {value}\n"
-    bot.send_message(chat_id, data_text)
-    start(message)
+    if len(data_dict)>0:
+        chat_id = message.chat.id
+        data_text = "Содержимое списка:\n"
+        for key, value in data_dict.items():
+            data_text += f"{key}: {value}\n"
+        bot.send_message(chat_id, data_text)
+        start(message)
+    else:
+        chat_id = message.chat.id
+        data_text = "список пуст"
+        bot.send_message(chat_id, data_text)
+        start(message)
 
 # deletepersons
 def delete_person(message):
@@ -136,30 +141,42 @@ def delete_person(message):
     if person in data:
         del data[person]
 
-    # Записываем обновленный JSON обратно в файл
-    with open('data.json', 'w') as f:
-        json.dump(data, f)    
+        # Записываем обновленный JSON обратно в файл
+        with open('data.json', 'w') as f:
+            json.dump(data, f)    
         
-    
         bot.send_message(message.chat.id, "Данные успешно удалены")
+        start(message)
+    else:
+        bot.send_message(message.chat.id, "такого человека нет в списке, повторите попытку")
         start(message)
 
 
 # check if anyone has birthday today
 def birthday_check(message):
+        with open("data.json", "r") as read_file:
+            data_dict = json.load(read_file)
+        flag=False
+        counter=len(data_dict)
+        print(counter)
         for key, value in data_dict.items():
             if today[:5] in value:
 
-                print(f"{key}: {value}")
+                
                 age=age_calculation(value)
 
                 # checking anniversary ubiley
                 if age % 5==0:
-                    text= f"сегодня <b>юбилей</b> рождения у {key}: {value}, ему исполнилось {age} "
+                    text= f"сегодня <b>юбилей</b>  у {key}: {value}, ему исполнилось {age} "
                     bot.send_message(message.chat.id,text ,parse_mode='html')
+                    flag=True
                 else:
                     text= f"сегодня день рождения у {key}: {value}, ему {age} "
                     bot.send_message(message.chat.id,text ,parse_mode='html')
+                    flag=True
+        if flag==False:
+            text=f"сегодня ни у кого нет дня рождения"
+            bot.send_message(message.chat.id,text, parse_mode='html')
 
 
 def plus_week(value):
