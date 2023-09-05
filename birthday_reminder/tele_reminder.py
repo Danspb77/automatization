@@ -2,6 +2,7 @@ import telebot
 from telebot import types
 import json
 from datetime import datetime
+import re
 
 # token from telegram
 bot=telebot.TeleBot("6235774110:AAFhV7WQ96YjqkvbRTl5-usGzPoue9lF4rU")
@@ -37,12 +38,12 @@ def age_calculation(value):
 
 def send_welcome(message):
     markup = types.InlineKeyboardMarkup()
-    start_button = types.InlineKeyboardButton(text="Start", callback_data="start")
+    start_button = types.InlineKeyboardButton(text="Start\U0001F4AB", callback_data="start")
     markup.add(start_button)
     
     user_name = message.from_user.first_name
-    text=f'hello, {user_name}, I\'m bot which will remind\
-     you about birhdays'
+    text=f'hello, {user_name} \U0001F44B, I\'m bot which will remind\
+     you about birhdays \U0001F603'
     bot.send_message(message.chat.id,text ,parse_mode='html')
 
     bot.send_message(message.chat.id, "Нажмите на кнопку, чтобы начать:", reply_markup=markup)
@@ -70,11 +71,11 @@ def process_callback_start(call):
 # generate buttons
 def generate_markup():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    adding_pers = types.KeyboardButton("add person in birthday list")
-    show_persons = types.KeyboardButton("show persons")
-    birth_today=types.KeyboardButton("imenninik")
-    birth_during_week=types.KeyboardButton("blizko")
-    delete_person=types.KeyboardButton("delete_person")
+    adding_pers = types.KeyboardButton("add person in birthday list\U0001F4D1")
+    show_persons = types.KeyboardButton("show persons\U0001F466")
+    birth_today=types.KeyboardButton("imenninik\U0001F389")
+    birth_during_week=types.KeyboardButton("blizko\U0001F4C6")
+    delete_person=types.KeyboardButton("delete_person\U0000274C")
     markup.add(adding_pers, show_persons,birth_today,birth_during_week,delete_person)
     return markup
 
@@ -82,24 +83,31 @@ def generate_markup():
 # find all text messages
 @bot.message_handler(content_types=['text'])
 
-# router of coomands
+# router of coomands 
 def func(message):
 
-    if(message.text == "add person in birthday list"):
+    if(message.text == "add person in birthday list\U0001F4D1"):
         bot.send_message(message.chat.id, "Введите имя черз пробел дату день/месяц/год:")
         bot.register_next_step_handler(message, get_name_and_day)
         
-    if message.text=="show persons":
+    if message.text==f"show persons\U0001F466":
         print_data(message)
-    if message.text=="imenninik":
+    if message.text==f"imenninik\U0001F389":
         birthday_check(message)
-    if message.text=="blizko":
+    if message.text=="blizko\U0001F4C6":
         week_check(message)
-    if message.text=="delete_person":
+    if message.text=="delete_person\U0000274C":
         bot.send_message(message.chat.id, "Введите имя of deleting person:")
         bot.register_next_step_handler(message, delete_person)
         
         
+# check format of date string
+def format_check(day):
+    patt=r'(0?[1-9]|[12][0-9]|3[01])/(0?[1-9]|1[012])/((19|20)\d\d)'
+    if  re.match(patt,day)!=None:
+        return True
+    return False
+    
 
 # funct to add new line in dictionary
 def get_name_and_day(message):
@@ -110,10 +118,15 @@ def get_name_and_day(message):
     name=name_and_day[0]
     day=name_and_day[1]
     data_dict[name]=day
-    with open('data.json', 'w') as outfile:
-        json.dump(data_dict, outfile)
-    bot.send_message(message.chat.id, "Данные успешно записаны")
-    start(message)
+    if format_check(day)==True:
+        with open('data.json', 'w') as outfile:
+            json.dump(data_dict, outfile)
+        bot.send_message(message.chat.id, "Данные успешно записаны\U00002705")
+        start(message)
+    else:
+        bot.send_message(message.chat.id, "Не удалось записать данные,попробуйте\
+            другой формат ввода\U0001F501")
+        start(message)
 
 # print data_dict
 def print_data(message):
@@ -148,7 +161,7 @@ def delete_person(message):
         bot.send_message(message.chat.id, "Данные успешно удалены")
         start(message)
     else:
-        bot.send_message(message.chat.id, "такого человека нет в списке, повторите попытку")
+        bot.send_message(message.chat.id, "такого человека нет в списке, повторите попытку\U0001F501")
         start(message)
 
 
