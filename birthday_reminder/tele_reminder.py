@@ -107,7 +107,14 @@ def format_check(day):
     if  re.match(patt,day)!=None:
         return True
     return False
-    
+
+# # funct to check surname exist ?
+def surname_check(name):
+    name_and_surname=''
+    for i in range(len(name)):
+        name_and_surname=name[i]+' '+ name_and_surname
+    return name_and_surname
+
 
 # funct to add new line in dictionary
 def get_name_and_day(message):
@@ -115,17 +122,18 @@ def get_name_and_day(message):
     name_and_day = message.text
     name_and_day=str(name_and_day)
     name_and_day=name_and_day.split()
-    name=name_and_day[0]
-    day=name_and_day[1]
-    data_dict[name]=day
+
+    name=name_and_day[0:len(name_and_day)-1]
+    day=name_and_day[len(name_and_day)-1]
+    data_dict[surname_check(name)]=day
     if format_check(day)==True:
         with open('data.json', 'w') as outfile:
             json.dump(data_dict, outfile)
         bot.send_message(message.chat.id, "Данные успешно записаны\U00002705")
         start(message)
     else:
-        bot.send_message(message.chat.id, "Не удалось записать данные,попробуйте\
-            другой формат ввода\U0001F501")
+        bot.send_message(message.chat.id, "Не удалось записать данные,попробуйте другой формат ввода\U0001F501")
+            
         start(message)
 
 # print data_dict
