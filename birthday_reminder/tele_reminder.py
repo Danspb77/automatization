@@ -34,30 +34,35 @@ def age_calculation(value):
 
 
 
-@bot.message_handler(commands=['welcome'])
+# @bot.message_handler(commands=['start'])
 
-def send_welcome(message):
-    markup = types.InlineKeyboardMarkup()
-    start_button = types.InlineKeyboardButton(text="Start\U0001F4AB", callback_data="start")
-    markup.add(start_button)
+# def send_welcome(message):
+#     markup = types.InlineKeyboardMarkup()
+#     start_button = types.InlineKeyboardButton(text="Start \U0001F4AB", callback_data="start")
+#     markup.add(start_button)
     
-    user_name = message.from_user.first_name
-    text=f'hello, {user_name} \U0001F44B, I\'m bot which will remind\
-     you about birhdays \U0001F603'
-    bot.send_message(message.chat.id,text ,parse_mode='html')
+#     # user_name = message.from_user.first_name
+#     # text=f'Привет, {user_name}  \U0001F44B я бот, который будет напоминать тебе о днях рождения \U0001F603'
+       
+#     # bot.send_message(message.chat.id,text ,parse_mode='html')
 
-    bot.send_message(message.chat.id, "Нажмите на кнопку, чтобы начать:", reply_markup=markup)
+#     bot.send_message(message.chat.id, "Нажми на кнопку, чтобы начать:", reply_markup=markup)
 
             
 # congreeting messages
 @bot.message_handler(commands=['start'])
 
-def start(message):
-    # generate_start_buttom(message)
-    
-    
+def send_welcome(message):
+    user_name = message.from_user.first_name
+    text=f'Привет, {user_name}  \U0001F44B я бот, который будет напоминать тебе о днях рождения \U0001F603'
+        
+    bot.send_message(message.chat.id,text ,parse_mode='html')
+    start(message)
 
-    text='What would you like to do?'
+
+def start(message):
+    
+    text='Что вы хотите сделать?'
     bot.send_message(message.chat.id,text,reply_markup=generate_markup())
     
 
@@ -71,11 +76,11 @@ def process_callback_start(call):
 # generate buttons
 def generate_markup():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    adding_pers = types.KeyboardButton("add person in birthday list\U0001F4D1")
-    show_persons = types.KeyboardButton("show persons\U0001F466")
-    birth_today=types.KeyboardButton("imenninik\U0001F389")
-    birth_during_week=types.KeyboardButton("blizko\U0001F4C6")
-    delete_person=types.KeyboardButton("delete_person\U0000274C")
+    adding_pers = types.KeyboardButton("добавить человека в список \U0001F4D1")
+    show_persons = types.KeyboardButton("показать список \U0001F466")
+    birth_today=types.KeyboardButton("день рождения сегодня \U0001F389")
+    birth_during_week=types.KeyboardButton("дни рождения в ближайшую неделю \U0001F4C6")
+    delete_person=types.KeyboardButton("удалить человека из списка \U0000274C")
     markup.add(adding_pers, show_persons,birth_today,birth_during_week,delete_person)
     return markup
 
@@ -86,18 +91,18 @@ def generate_markup():
 # router of coomands 
 def func(message):
 
-    if(message.text == "add person in birthday list\U0001F4D1"):
-        bot.send_message(message.chat.id, "Введите имя черз пробел дату день/месяц/год:")
+    if(message.text == "добавить человека в список \U0001F4D1"):
+        bot.send_message(message.chat.id, "Введите имя через пробел дату день/месяц/год:")
         bot.register_next_step_handler(message, get_name_and_day)
         
-    if message.text==f"show persons\U0001F466":
+    if message.text==f"показать список \U0001F466":
         print_data(message)
-    if message.text==f"imenninik\U0001F389":
+    if message.text==f"день рождения сегодня \U0001F389":
         birthday_check(message)
-    if message.text=="blizko\U0001F4C6":
+    if message.text=="дни рождения в ближайшую неделю \U0001F4C6":
         week_check(message)
-    if message.text=="delete_person\U0000274C":
-        bot.send_message(message.chat.id, "Введите имя of deleting person:")
+    if message.text=="удалить человека из списка \U0000274C":
+        bot.send_message(message.chat.id, "Введите имя человека, которого хотите удалить :")
         bot.register_next_step_handler(message, delete_person)
         
         
@@ -108,12 +113,12 @@ def format_check(day):
         return True
     return False
 
-# # funct to check surname exist ?
+#  funct to check surname exist ?
 def surname_check(name):
     name_and_surname=''
     for i in range(len(name)):
         name_and_surname=name[i]+' '+ name_and_surname
-    return name_and_surname
+    return name_and_surname.rstrip()
 
 
 # funct to add new line in dictionary
@@ -129,12 +134,18 @@ def get_name_and_day(message):
     if format_check(day)==True:
         with open('data.json', 'w') as outfile:
             json.dump(data_dict, outfile)
-        bot.send_message(message.chat.id, "Данные успешно записаны\U00002705")
+        bot.send_message(message.chat.id, "Данные успешно записаны  \U00002705")
         start(message)
     else:
-        bot.send_message(message.chat.id, "Не удалось записать данные,попробуйте другой формат ввода\U0001F501")
+        bot.send_message(message.chat.id, "Не удалось записать данные,попробуйте другой формат ввода  \U0001F501")
             
         start(message)
+
+# format data for printing
+def format_printing_data(value):
+    value=str(value)
+    value=value.replace('/','.')
+    return value
 
 # print data_dict
 def print_data(message):
@@ -144,7 +155,7 @@ def print_data(message):
         chat_id = message.chat.id
         data_text = "Содержимое списка:\n"
         for key, value in data_dict.items():
-            data_text += f"{key}: {value}\n"
+            data_text += f"{key} - {format_printing_data(value)}\n"
         bot.send_message(chat_id, data_text)
         start(message)
     else:
@@ -169,7 +180,7 @@ def delete_person(message):
         bot.send_message(message.chat.id, "Данные успешно удалены")
         start(message)
     else:
-        bot.send_message(message.chat.id, "такого человека нет в списке, повторите попытку\U0001F501")
+        bot.send_message(message.chat.id, "такого человека нет в списке, повторите попытку \U0001F501")
         start(message)
 
 
@@ -226,7 +237,7 @@ def week_check(message):
         start(message)
 
     if flag==False:
-        text= f"nobody hasn't birthday during the week "
+        text= f"ни у кого нет дня рождения в ближайшие 7 дней "
         bot.send_message(message.chat.id,text ,parse_mode='html')
         start(message)
 
